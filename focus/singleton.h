@@ -19,8 +19,8 @@ template<class T,class X=void,int N=0>
 class SingletonPtr{
 public:
     // 返回单例智能指针
-    static std::share_ptr<T> GetInstance(){
-        std::share_ptr<T> v(new T);
+    static std::shared_ptr<T> GetInstance(){
+        std::shared_ptr<T> v(new T);
         return v;
     }
 };

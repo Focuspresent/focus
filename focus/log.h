@@ -7,13 +7,17 @@
 #include <list>
 #include <vector>
 #include <stdint.h>
+#include <map>
+#include <fstream>
+
+#include "singleton.h"
 
 namespace focus{
 
 class Logger;
 class LogEveneWrap;
 
-// 日志流式输出
+// 日志流式输出 TODO
 #define FOCUS_LOG_LEVEL(logger,level) \
     if(level>=logger->getLevel())     \
     LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,0,0,time(0),"TT",level))).getSS()
@@ -24,7 +28,7 @@ class LogEveneWrap;
 #define FOCUS_LOG_ERROR(logger) FOCUS_LOG_LEVEL(logger,LogLevel::ERROR)
 #define FOCUS_LOG_FATAL(logger) FOCUS_LOG_LEVEL(logger,LogLevel::FATAL)
 
-// 日志格式化输出
+// 日志格式化输出 TODO
 #define FOCUS_LOG_FMT_LEVEL(logger,level,fmt,...) \
     if(level>=logger->getLevel())                 \
     LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,0,0,time(0),"TT",level))).getEvent()->format(fmt,__VA_ARGS__)
@@ -228,7 +232,41 @@ class StdOutLogAppender:public LogAppender{
 public:
     void log(Logger::ptr logger,LogLevel::Level level,LogEvent::ptr event) override;
 };
+
+// 文件输出器
+class FileLogAppender: public LogAppender{
+public:
+    FileLogAppender(const std::string& file);
+    ~FileLogAppender();
+
+    bool reopen();
+
+    void log(Logger::ptr logger,LogLevel::Level level,LogEvent::ptr event) override;
+
+private:
+    std::string file_;
+    std::ofstream ofs;
+};
  
+// 日志管理器
+class LogManager{
+public:
+    using ptr=std::shared_ptr<LogManager>;
+
+    LogManager();
+
+    void init();
+
+    Logger::ptr getRoot() const {return root_;}
+    Logger::ptr getLogger(const std::string& name);
+
+private:
+    std::map<std::string,Logger::ptr> loggers_;
+    Logger::ptr root_;
+};
+
+using LoggerMgr=Singleton<LogManager>;
+
 }
 
 #endif

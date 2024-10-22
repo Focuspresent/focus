@@ -146,6 +146,31 @@ void StdOutLogAppender::log(Logger::ptr logger,LogLevel::Level level,LogEvent::p
     logformatter_->format(std::cout,logger,level,event);
 }
 
+FileLogAppender::FileLogAppender(const std::string& file):file_(file){
+    reopen();
+}
+
+FileLogAppender::~FileLogAppender(){
+    ofs.close();
+}
+
+bool FileLogAppender::reopen(){
+    if(ofs.is_open()){
+        return true;
+    }
+    ofs.open(file_,std::ios::app);
+    if(ofs.fail()){
+        std::cerr<<"file open fail"<<std::endl;
+        return false;
+    }
+    return true;
+}
+
+void FileLogAppender::log(Logger::ptr logger,LogLevel::Level level,LogEvent::ptr event){
+    if(level_>level||!reopen()) return ;
+    logformatter_->format(ofs,logger,level,event);
+}
+
 // 日志器名字
 class LoggerNameFormatItem: public LogFormatter::FormatItem{
 public:
@@ -291,6 +316,25 @@ void LogFormatter::init(){
         }
         items_.emplace_back(it->second());
     }
+}
+
+LogManager::LogManager(){
+    init();
+}
+
+void LogManager::init(){
+    root_.reset(new Logger());
+    root_->addAppender(LogAppender::ptr(new StdOutLogAppender()));
+    root_->addAppender(LogAppender::ptr(new FileLogAppender("/home/zdc/Code/Git/focus/logs/log.txt")));
+}
+
+Logger::ptr LogManager::getLogger(const std::string& name){
+    // TODO
+    auto it=loggers_.find(name);
+    if(it==loggers_.end()){
+        return root_;
+    }
+    return it->second;
 }
 
 }
