@@ -40,7 +40,7 @@ class LogEveneWrap;
 #define FOCUS_LOG_FMT_FATAL(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::FATAL,fmt,__VA_ARGS__)
 
 // 获取日志器
-#define FOCUS_LOG_ROOT LoggerMgr::GetInstance()->getRoot()
+#define FOCUS_LOG_ROOT() LoggerMgr::GetInstance()->getRoot()
 #define FOCUS_LOG_NAME(name) LoggerMgr::GetInstance()->getLogger(name)
 
 // 日志级别

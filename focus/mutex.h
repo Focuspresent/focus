@@ -174,10 +174,10 @@ public:
     using Lock=ScopedLockImpl<Mutex>;
 
     // 构造
-    Mutex() {}
+    NullMutex() {}
 
     // 析构
-    ~Mutex() {}
+    ~NullMutex() {}
 
     // 上锁
     void lock() {}
@@ -232,10 +232,10 @@ public:
     using WriteLock=WriteScopedLockImpl<RWMutex>;
 
     // 构造
-    RWMutex() {}
+    NullRWMutex() {}
 
     // 析构
-    ~RWMutex() {}
+    ~NullRWMutex() {}
 
     // 上读锁
     void rdlock() {}
@@ -255,7 +255,7 @@ public:
 
     // 构造
     SpinLock(){
-        pthread_spin_init(&mutex_);
+        pthread_spin_init(&mutex_,0);
     }
 
     // 析构
@@ -273,7 +273,7 @@ public:
         pthread_spin_unlock(&mutex_);
     }
 
-priavte:
+private:
     pthread_spinlock_t mutex_;
 };
 
