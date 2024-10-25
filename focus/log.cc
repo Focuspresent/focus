@@ -331,10 +331,13 @@ void LogManager::init(){
 Logger::ptr LogManager::getLogger(const std::string& name){
     // TODO
     auto it=loggers_.find(name);
-    if(it==loggers_.end()){
-        return root_;
+    if(it!=loggers_.end()){
+        return it->second;
     }
-    return it->second;
-}
+
+    Logger::ptr logger(new Logger(name));
+    loggers_[name]=logger;
+    return logger;
+}   
 
 }
