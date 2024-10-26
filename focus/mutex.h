@@ -98,7 +98,7 @@ public:
 
 private:
     value_ref mutex_;
-    std::atomic<bool> locked_=false;
+    bool locked_=false;
 };
 
 // 局部写锁模版
@@ -133,7 +133,7 @@ public:
 
 private:
     value_ref mutex_;
-    std::atomic<bool> locked_=false;
+    bool locked_=false;
 };
 
 // 互斥量
@@ -216,7 +216,7 @@ public:
 
     // 释放锁
     void unlock(){
-        pthread_rwlock_destroy(&lock_);
+        pthread_rwlock_unlock(&lock_);
     }
 
 private:
