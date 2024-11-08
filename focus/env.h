@@ -1,0 +1,52 @@
+#ifndef __FOCUS_ENV_H__
+#define __FOCUS_ENV_H__
+
+#include <map>
+#include <vector>
+#include <string>
+
+#include "mutex.h"
+#include "singleton.h"
+
+namespace focus{
+
+class Env {
+public:
+    using RWMutexType=RWMutex;
+
+    bool init(int argc,char** argv);
+
+    void add(const std::string& key,const std::string& val);
+    bool has(const std::string& key);
+    void del(const std::string& key);
+    std::string get(const std::string& key,const std::string& defaultval="");
+
+    void addHelp(const std::string& key,const std::string& desc);
+    void removeHelp(const std::string& key);
+    void printHelp();
+
+    const std::string& getExe() const {return exe_;}
+    const std::string& getCwd() const {return cwd_;}
+
+    bool setEnv(const std::string& key,const std::string& val);
+    std::string getEnv(const std::string& key,const std::string& defaultval="");
+
+    std::string getAbsolutePath(const std::string& path) const;
+    std::string getAbsoluteWorkPath(const std::string& path) const;
+    std::string getConfigPath();
+
+private:
+    RWMutexType mutex_;
+    std::map<std::string,std::string> args_;
+    std::vector<std::pair<std::string,std::string>> helps_;
+
+    std::string program_;
+    std::string exe_;
+    std::string cwd_;
+};
+
+using EnvMgr=Singleton<Env>;
+
+}
+
+#endif

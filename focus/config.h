@@ -174,7 +174,60 @@ private:
 // 配置变量管理类 TODO
 class Config{
 public:
-    
+    using ConfigVarMap=std::map<std::string,ConfigVarBase::ptr>;
+    using RWMutexType=RWMutex;
+
+    /**
+     * @brief 获取配置变量
+     * 
+     */
+    template<class T>
+    static typename ConfigVar<T>::ptr LookUp(const std::string& name,const T& defaultval,const std::string& description="") {
+        RWMutexType::WriteLock lock(GetMutex());
+        auto it=GetDatas().find(name);
+        // 存在
+        if(it!=GetDatas().end()){
+            // 下转型
+            auto temp=std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
+            if(temp!=nullptr){
+                // 获取成功
+                FOCUS_LOG_INFO(FOCUS_LOG_ROOT())<<"LookUp name= "<<name<<" exists";
+                return temp;
+            }else{
+                // 类型不匹配
+                FOCUS_LOG_ERROR(FOCUS_LOG_ROOT())<<"LookUp name= "<<name<<" exists but type not"
+                        <<TypeToName<T>()<<" real type= "<<it->second->getTypeName()
+                        <<" "<<it->second->toString();
+                return nullptr;
+            }
+        }
+        // 没有
+        typename ConfigVar<T>::ptr v(new ConfigVar<T>(name,defaultval,description));
+        GetDatas()[name]=v;
+        return v;
+    }
+
+    // 获取配置变量
+    template<class T>
+    static typename ConfigVar<T>::ptr LookUp(const std::string& name) {
+        auto it=GetDatas().find(name);
+        if(it==GetDatas().end()){
+            return nullptr;
+        }
+        return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
+    }
+private:
+    // 获取键值对
+    static ConfigVarMap& GetDatas() {
+        static ConfigVarMap s_datas;
+        return s_datas;
+    }
+
+    // 获取互斥量
+    static RWMutexType& GetMutex() {
+        static RWMutexType s_mutex;
+        return s_mutex;
+    }
 };
 
 }
