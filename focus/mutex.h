@@ -63,7 +63,7 @@ public:
 
 private:
     value_ref mutex_;
-    std::atomic<bool> locked_=false;
+    bool locked_=false;
 };
 
 // 局部读锁模版

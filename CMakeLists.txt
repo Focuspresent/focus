@@ -17,10 +17,13 @@ include_directories(focus/)
 # 添加库文件源码文件
 set(LIB_SRC
     focus/log.cc
-    focus/mutex.cc)
+    focus/mutex.cc
+    focus/util.cc
+    focus/thread.cc)
 add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp)
 
 # 添加测试
 self_add_executable(test_log tests/test_log.cc focus focus)
 self_add_executable(test_config tests/test_config.cc focus focus)
+self_add_executable(test_thread tests/test_thread.cc focus focus)

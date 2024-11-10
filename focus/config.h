@@ -201,6 +201,14 @@ public:
                 return nullptr;
             }
         }
+        
+        // 判断无效字符
+        if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")
+            !=std::string::npos){
+            FOCUS_LOG_ERROR(FOCUS_LOG_ROOT())<<"LookUp name invaild "<<name;
+            throw std::invalid_argument(name);
+        }
+
         // 没有
         typename ConfigVar<T>::ptr v(new ConfigVar<T>(name,defaultval,description));
         GetDatas()[name]=v;
@@ -210,6 +218,7 @@ public:
     // 获取配置变量
     template<class T>
     static typename ConfigVar<T>::ptr LookUp(const std::string& name) {
+        RWMutexType::ReadLock lock(GetMutex());
         auto it=GetDatas().find(name);
         if(it==GetDatas().end()){
             return nullptr;

@@ -15,5 +15,7 @@ int main(){
     int id=var.addCallBack(cb);
     var.fromString(str);
     cout<<var.getVal()<<endl;
+    auto test_var=Config::LookUp<int>("test.var",55,"test var");
+    cout<<test_var->toString()<<endl;
     return 0;
 }
