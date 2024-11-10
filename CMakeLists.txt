@@ -24,6 +24,9 @@ add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp)
 
 # 添加测试
+add_executable(test_demo tests/test_demo)
+
 self_add_executable(test_log tests/test_log.cc focus focus)
 self_add_executable(test_config tests/test_config.cc focus focus)
 self_add_executable(test_thread tests/test_thread.cc focus focus)
+self_add_executable(test_yaml tests/test_yaml.cc focus focus)
