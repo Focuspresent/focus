@@ -11,6 +11,8 @@
 #include <fstream>
 
 #include "singleton.h"
+#include "util.h"
+#include "thread.h"
 
 namespace focus{
 
@@ -20,7 +22,7 @@ class LogEveneWrap;
 // 日志流式输出 TODO
 #define FOCUS_LOG_LEVEL(logger,level) \
     if(level>=logger->getLevel())     \
-    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,0,0,time(0),"TT",level))).getSS()
+    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,GetThreadId(),0,time(0),Thread::GetName(),level))).getSS()
 
 #define FOCUS_LOG_DEBUG(logger) FOCUS_LOG_LEVEL(logger,LogLevel::DEBUG)
 #define FOCUS_LOG_INFO(logger) FOCUS_LOG_LEVEL(logger,LogLevel::INFO)
@@ -31,7 +33,7 @@ class LogEveneWrap;
 // 日志格式化输出 TODO
 #define FOCUS_LOG_FMT_LEVEL(logger,level,fmt,...) \
     if(level>=logger->getLevel())                 \
-    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,0,0,time(0),"TT",level))).getEvent()->format(fmt,__VA_ARGS__)
+    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,GetThreadId(),0,time(0),Thread::GetName(),level))).getEvent()->format(fmt,__VA_ARGS__)
 
 #define FOCUS_LOG_FMT_DEBUG(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::DEBUG,fmt,__VA_ARGS__)
 #define FOCUS_LOG_FMT_INFO(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::INFO,fmt,__VA_ARGS__)

@@ -17,5 +17,7 @@ int main(){
     cout<<var.getVal()<<endl;
     auto test_var=Config::LookUp<int>("test.var",55,"test var");
     cout<<test_var->toString()<<endl;
+    YAML::Node node=YAML::LoadFile("/home/zdc/Code/Git/focus/tests/test.yaml");
+    Config::LoadFromYaml(node);
     return 0;
 }

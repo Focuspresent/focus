@@ -9,6 +9,7 @@
 #include <map>
 #include <stdint.h>
 #include <exception>
+#include <yaml-cpp/yaml.h>
 
 #include "mutex.h"
 #include "log.h"
@@ -203,7 +204,7 @@ public:
         }
         
         // 判断无效字符
-        if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._012345678")
+        if(name.find_first_not_of("abcdefghikjlmnopqrstuvwxyz._0123456789")
             !=std::string::npos){
             FOCUS_LOG_ERROR(FOCUS_LOG_ROOT())<<"LookUp name invaild "<<name;
             throw std::invalid_argument(name);
@@ -225,6 +226,12 @@ public:
         }
         return std::dynamic_pointer_cast<ConfigVar<T>>(it->second);
     }
+
+    // 从yaml文件中读取
+    static void LoadFromYaml(const YAML::Node& root);
+
+    // 获取基类指针
+    static ConfigVarBase::ptr LookUpBase(const std::string& name);
 private:
     // 获取键值对
     static ConfigVarMap& GetDatas() {

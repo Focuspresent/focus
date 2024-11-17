@@ -18,6 +18,7 @@ include_directories(focus/)
 set(LIB_SRC
     focus/log.cc
     focus/mutex.cc
+    focus/config.cc
     focus/util.cc
     focus/thread.cc)
 add_library(focus ${LIB_SRC})
