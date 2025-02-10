@@ -336,6 +336,8 @@ Logger::ptr LogManager::getLogger(const std::string& name){
     }
 
     Logger::ptr logger(new Logger(name));
+    // 添加测试输出
+    logger->addAppender(LogAppender::ptr(new StdOutLogAppender()));
     loggers_[name]=logger;
     return logger;
 }   
