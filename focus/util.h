@@ -14,7 +14,13 @@ namespace focus{
 // 获取线程id
 pid_t GetThreadId();
 
-// 获取协程id TODO
+// 获取线程名
+std::string GetThreadName();
+
+// 设置线程名
+void SetThreadName(const std::string& name);
+
+// 获取协程id
 uint64_t GetFiberId();
 
 /**

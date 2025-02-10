@@ -1,5 +1,6 @@
 #include "util.h"
 #include "log.h"
+#include "fiber.h"
 #include <execinfo.h>
 #include <sstream>
 
@@ -12,8 +13,18 @@ pid_t GetThreadId() {
     return syscall(SYS_gettid);
 }
 
+std::string GetThreadName() {
+    char thread_name[16] = {0};
+    pthread_getname_np(pthread_self(), thread_name, 16);
+    return std::string(thread_name);
+}
+
+void SetThreadName(const std::string& name) {
+    pthread_setname_np(pthread_self(), name.substr(0, 15).c_str());
+}
+
 uint64_t GetFiberId() {
-    return 0;
+    return Fiber::GetFiberId();
 }
 
 // 将编译器读取的函数名编码转成看得懂的

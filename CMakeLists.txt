@@ -20,7 +20,8 @@ set(LIB_SRC
     focus/mutex.cc
     focus/config.cc
     focus/util.cc
-    focus/thread.cc)
+    focus/thread.cc
+    focus/fiber.cc)
 add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp)
 
@@ -33,3 +34,4 @@ self_add_executable(test_config tests/test_config.cc focus focus)
 self_add_executable(test_thread tests/test_thread.cc focus focus)
 self_add_executable(test_yaml tests/test_yaml.cc focus focus)
 self_add_executable(test_macro tests/test_macro.cc focus focus)
+self_add_executable(test_fiber tests/test_fiber.cc focus focus)
