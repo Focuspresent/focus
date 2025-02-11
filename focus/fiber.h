@@ -41,7 +41,7 @@ public:
      * @param[in] stacksize 协程栈大小
      * @param[in] runInScheduler 是否参与调度器
      */
-    Fiber(std::function<void()> cb, uint32_t stacksize, bool runInScheduler = true);
+    Fiber(std::function<void()> cb, uint32_t stacksize = 0, bool runInScheduler = true);
 
     /**
      * @brief 析构函数

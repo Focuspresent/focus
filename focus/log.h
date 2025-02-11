@@ -14,36 +14,36 @@
 #include "util.h"
 #include "thread.h"
 
+// 日志流式输出
+#define FOCUS_LOG_LEVEL(logger,level) \
+    if(level>=logger->getLevel())     \
+    focus::LogEventWrap(focus::LogEvent::ptr(new focus::LogEvent(logger,__FILE__,__LINE__,0,focus::GetThreadId(),focus::GetFiberId(),time(0),focus::Thread::GetName(),level))).getSS()
+
+#define FOCUS_LOG_DEBUG(logger) FOCUS_LOG_LEVEL(logger,focus::LogLevel::DEBUG)
+#define FOCUS_LOG_INFO(logger) FOCUS_LOG_LEVEL(logger,focus::LogLevel::INFO)
+#define FOCUS_LOG_WARN(logger) FOCUS_LOG_LEVEL(logger,focus::LogLevel::WARN)
+#define FOCUS_LOG_ERROR(logger) FOCUS_LOG_LEVEL(logger,focus::LogLevel::ERROR)
+#define FOCUS_LOG_FATAL(logger) FOCUS_LOG_LEVEL(logger,focus::LogLevel::FATAL)
+
+// 日志格式化输出
+#define FOCUS_LOG_FMT_LEVEL(logger,level,fmt,...) \
+    if(level>=logger->getLevel())                 \
+    focus::LogEventWrap(focus::LogEvent::ptr(new focus::LogEvent(logger,__FILE__,__LINE__,0,focus::GetThreadId(),focus::GetFiberId(),time(0),focus::Thread::GetName(),level))).getEvent()->format(fmt,__VA_ARGS__)
+
+#define FOCUS_LOG_FMT_DEBUG(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,focus::LogLevel::DEBUG,fmt,__VA_ARGS__)
+#define FOCUS_LOG_FMT_INFO(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,focus::LogLevel::INFO,fmt,__VA_ARGS__)
+#define FOCUS_LOG_FMT_WARN(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,focus::LogLevel::WARN,fmt,__VA_ARGS__)
+#define FOCUS_LOG_FMT_ERROR(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,focus::LogLevel::ERROR,fmt,__VA_ARGS__)
+#define FOCUS_LOG_FMT_FATAL(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,focus::LogLevel::FATAL,fmt,__VA_ARGS__)
+
+// 获取日志器
+#define FOCUS_LOG_ROOT() focus::LoggerMgr::GetInstance()->getRoot()
+#define FOCUS_LOG_NAME(name) focus::LoggerMgr::GetInstance()->getLogger(name)
+
 namespace focus{
 
 class Logger;
 class LogEveneWrap;
-
-// 日志流式输出 TODO
-#define FOCUS_LOG_LEVEL(logger,level) \
-    if(level>=logger->getLevel())     \
-    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,GetThreadId(),GetFiberId(),time(0),Thread::GetName(),level))).getSS()
-
-#define FOCUS_LOG_DEBUG(logger) FOCUS_LOG_LEVEL(logger,LogLevel::DEBUG)
-#define FOCUS_LOG_INFO(logger) FOCUS_LOG_LEVEL(logger,LogLevel::INFO)
-#define FOCUS_LOG_WARN(logger) FOCUS_LOG_LEVEL(logger,LogLevel::WARN)
-#define FOCUS_LOG_ERROR(logger) FOCUS_LOG_LEVEL(logger,LogLevel::ERROR)
-#define FOCUS_LOG_FATAL(logger) FOCUS_LOG_LEVEL(logger,LogLevel::FATAL)
-
-// 日志格式化输出 TODO
-#define FOCUS_LOG_FMT_LEVEL(logger,level,fmt,...) \
-    if(level>=logger->getLevel())                 \
-    LogEventWrap(LogEvent::ptr(new LogEvent(logger,__FILE__,__LINE__,0,GetThreadId(),GetFiberId(),time(0),Thread::GetName(),level))).getEvent()->format(fmt,__VA_ARGS__)
-
-#define FOCUS_LOG_FMT_DEBUG(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::DEBUG,fmt,__VA_ARGS__)
-#define FOCUS_LOG_FMT_INFO(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::INFO,fmt,__VA_ARGS__)
-#define FOCUS_LOG_FMT_WARN(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::WARN,fmt,__VA_ARGS__)
-#define FOCUS_LOG_FMT_ERROR(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::ERROR,fmt,__VA_ARGS__)
-#define FOCUS_LOG_FMT_FATAL(logger,fmt,...) FOCUS_LOG_FMT_LEVEL(logger,LogLevel::FATAL,fmt,__VA_ARGS__)
-
-// 获取日志器
-#define FOCUS_LOG_ROOT() LoggerMgr::GetInstance()->getRoot()
-#define FOCUS_LOG_NAME(name) LoggerMgr::GetInstance()->getLogger(name)
 
 // 日志级别
 class LogLevel{
