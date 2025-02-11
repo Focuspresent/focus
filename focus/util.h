@@ -23,6 +23,9 @@ void SetThreadName(const std::string& name);
 // 获取协程id
 uint64_t GetFiberId();
 
+// 获取当前时间的毫秒
+uint64_t GetCurrentMS();
+
 /**
  * @brief 获取当前调用栈
  * @param[out] bt 保存调用栈

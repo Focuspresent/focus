@@ -2,6 +2,7 @@
 #include "log.h"
 #include "macro.h"
 #include "config.h"
+#include "scheduler.h"
 #include <atomic>
 
 namespace focus {
@@ -60,10 +61,10 @@ Fiber::Fiber() {
 /**
  * @brief 创建子协程，需要分配栈
  */
-Fiber::Fiber(std::function<void()> cb, uint32_t stacksize, bool runinscheduler):
+Fiber::Fiber(std::function<void()> cb, uint32_t stacksize, bool runInScheduler):
     m_id(s_fiber_id++),
     m_cb(cb),
-    m_runinscheduler(runinscheduler) {
+    m_runInScheduler(runInScheduler) {
     ++s_fiber_count;
     m_stacksize = stacksize? stacksize: g_fiber_stack_size->getVal();
     m_stack = StackAllocator::Alloc(m_stacksize);
@@ -150,9 +151,11 @@ void Fiber::resume() {
     m_state = RUNNING;
 
     // 是否参加调度器
-    if(m_runinscheduler) {
-        // 与调度器的主协程交换 TOOD
-
+    if(m_runInScheduler) {
+        // 与调度器的主协程交换
+        if(swapcontext(&(Scheduler::GetMainFiber()->m_uctx), &m_uctx)) {
+            FOCUS_ASSERT2(false, "Fiber::resume() swapcontext from thread to scheduler");
+        }
     }else {
         // 与当前线程的主协程交换
         if(swapcontext(&(t_thread_fiber->m_uctx), &m_uctx)) {
@@ -174,9 +177,11 @@ void Fiber::yield() {
     }
 
     // 是否参加调度器
-    if(m_runinscheduler) {
-        // 与调度器的主协程交换 TOOD
-
+    if(m_runInScheduler) {
+        // 与调度器的主协程交换
+        if(swapcontext(&m_uctx, &(Scheduler::GetMainFiber()->m_uctx))) {
+            FOCUS_ASSERT2(false, "Fiber::yield() swapcontext from scheduler to thread");
+        }
     }else {
         // 与当前线程的主协程交换
         if(swapcontext(&m_uctx, &(t_thread_fiber->m_uctx))) {

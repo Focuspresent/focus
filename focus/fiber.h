@@ -39,9 +39,9 @@ public:
      * @brief 构造函数
      * @param[in] cb 协程入口函数
      * @param[in] stacksize 协程栈大小
-     * @param[in] runinscheduler 是否参与调度器
+     * @param[in] runInScheduler 是否参与调度器
      */
-    Fiber(std::function<void()> cb, uint32_t stacksize, bool runinscheduler = true);
+    Fiber(std::function<void()> cb, uint32_t stacksize, bool runInScheduler = true);
 
     /**
      * @brief 析构函数
@@ -113,7 +113,7 @@ private:
     ucontext_t m_uctx; // 协程上下文
     void* m_stack = nullptr; // 协程栈地址
     std::function<void()> m_cb; // 协程回调函数
-    bool m_runinscheduler; // 是否参与调度器
+    bool m_runInScheduler; // 是否参与调度器
 };
 
 } // namespace focus

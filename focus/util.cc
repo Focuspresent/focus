@@ -3,6 +3,7 @@
 #include "fiber.h"
 #include <execinfo.h>
 #include <sstream>
+#include <sys/time.h>
 
 namespace focus {
 
@@ -25,6 +26,12 @@ void SetThreadName(const std::string& name) {
 
 uint64_t GetFiberId() {
     return Fiber::GetFiberId();
+}
+
+uint64_t GetCurrentMS() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return tv.tv_sec * 1000ul  + tv.tv_usec / 1000;
 }
 
 // 将编译器读取的函数名编码转成看得懂的
