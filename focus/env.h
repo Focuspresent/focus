@@ -25,8 +25,8 @@ public:
     void removeHelp(const std::string& key);
     void printHelp();
 
-    const std::string& getExe() const {return exe_;}
-    const std::string& getCwd() const {return cwd_;}
+    const std::string& getExe() const {return m_exe;}
+    const std::string& getCwd() const {return m_cwd;}
 
     bool setEnv(const std::string& key,const std::string& val);
     std::string getEnv(const std::string& key,const std::string& defaultval="");
@@ -36,13 +36,13 @@ public:
     std::string getConfigPath();
 
 private:
-    RWMutexType mutex_;
-    std::map<std::string,std::string> args_;
-    std::vector<std::pair<std::string,std::string>> helps_;
+    RWMutexType m_mutex;
+    std::map<std::string,std::string> m_args;
+    std::vector<std::pair<std::string,std::string>> m_helps;
 
-    std::string program_;
-    std::string exe_;
-    std::string cwd_;
+    std::string m_program;
+    std::string m_exe;
+    std::string m_cwd;
 };
 
 using EnvMgr=Singleton<Env>;
