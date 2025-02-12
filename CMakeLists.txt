@@ -22,7 +22,8 @@ set(LIB_SRC
     focus/util.cc
     focus/thread.cc
     focus/fiber.cc
-    focus/scheduler.cc)
+    focus/scheduler.cc
+    focus/timer.cc)
 add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp)
 

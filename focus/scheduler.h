@@ -17,8 +17,8 @@ namespace focus {
  */
 class Scheduler {
 public:
-    typedef std::shared_ptr<Scheduler> ptr;
-    typedef Mutex MutexType;
+    using ptr = std::shared_ptr<Scheduler>;
+    using MutexType = Mutex;
 
     /**
      * @brief 创建调度器
