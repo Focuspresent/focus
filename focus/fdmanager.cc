@@ -1,8 +1,8 @@
 #include "fdmanager.h"
+#include "hook.h"
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 namespace focus {
 
@@ -58,12 +58,12 @@ bool FdCtx::init() {
         m_isSocket = S_ISSOCK(fdStat.st_mode);
     }
 
-    // 如果是套接字 TODO
+    // 如果是套接字
     if(m_isSocket) {
-        int flags = fcntl(m_fd, F_GETFL, 0);
+        int flags = fcntl_f(m_fd, F_GETFL, 0);
         // 如果没有设置非阻塞
         if(!(flags & O_NONBLOCK)) {
-            fcntl(m_fd, F_SETFL, flags | O_NONBLOCK);
+            fcntl_f(m_fd, F_SETFL, flags | O_NONBLOCK);
         }
         m_sysNonblock = true;
     }else {

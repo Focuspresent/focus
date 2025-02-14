@@ -29,7 +29,7 @@ set(LIB_SRC
     focus/fdmanager.cc
     focus/hook.cc)
 add_library(focus ${LIB_SRC})
-target_link_libraries(focus PUBLIC pthread yaml-cpp)
+target_link_libraries(focus PUBLIC pthread yaml-cpp dl)
 
 # 添加测试
 add_executable(test_demo tests/test_demo)

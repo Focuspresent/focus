@@ -1,5 +1,6 @@
 #include "scheduler.h"
 #include "macro.h"
+#include "hook.h"
 
 namespace focus {
 
@@ -120,7 +121,9 @@ void Scheduler::tickle() {
 
 void Scheduler::run() {
     FOCUS_LOG_DEBUG(g_logger) << "run";
-    // TODO hook
+    // 设置hook
+    setHookEnable(true);
+    // 将当前设置为调度器
     setThis();
     // 其余非caller调度
     if(GetThreadId() != m_rootThread) {
