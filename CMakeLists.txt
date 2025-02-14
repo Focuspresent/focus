@@ -25,7 +25,9 @@ set(LIB_SRC
     focus/scheduler.cc
     focus/timer.cc
     focus/iomanager.cc
-    focus/env.cc)
+    focus/env.cc
+    focus/fdmanager.cc
+    focus/hook.cc)
 add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp)
 
