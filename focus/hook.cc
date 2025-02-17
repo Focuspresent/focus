@@ -5,6 +5,7 @@
 #include "iomanager.h"
 #include "macro.h"
 #include <dlfcn.h>
+#include <cstdarg>
 
 // 全局日志器
 focus::Logger::ptr g_logger = FOCUS_LOG_NAME("system");
@@ -278,6 +279,87 @@ int socket(int domain, int type, int protocol) {
 
 int connect_with_timeout(int fd, const struct sockaddr* addr, socklen_t addrlen, uint64_t timeoutMs) {
     // TODO
+    // 没有启用hook
+    if(!focus::t_hook_enable) {
+        return connect_f(fd, addr, addrlen);
+    }
+    // 获取fd上下文
+    focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(fd);
+    // 没有上下文或者已经关闭了
+    if(!ctx || ctx->isClose()) {
+        errno = EBADF; // 设置错误码
+        return -1;
+    }
+
+    // 不是套接字或者用户开启非阻塞
+    if(!ctx->isSocket() || ctx->getUserNonblock()) {
+        return connect_f(fd, addr, addrlen);
+    }
+
+    // 直接调用
+    int n = connect_f(fd, addr, addrlen);
+    if(0 == n) {
+        // 连接成功
+        return 0;
+    }else if(-1 != n || EINPROGRESS != errno) {
+        // 连接没错，或者不是正在连接
+        return n;
+    }
+
+    focus::IOManager* iom = focus::IOManager::GetThis();
+    focus::Timer::ptr timer;
+    std::shared_ptr<TimerInfo> tinfo(new TimerInfo);
+    std::weak_ptr<TimerInfo> winfo(tinfo);
+
+    if((uint64_t)-1 != timeoutMs) {
+        // 添加一个定时器
+        timer = iom->addConditionTimer([winfo, fd, iom](){
+            auto t = winfo.lock();
+            // 定时器不存在，或者已经取消，也就是处理了
+            if(!t || t->cancelled) {
+                return ;
+            }
+            // 超时未处理
+            t->cancelled = ETIMEDOUT;
+            // 指定触发
+            iom->cancelEvent(fd, focus::IOManager::WRITE);
+        }, timeoutMs, winfo);
+    }
+
+    // 添加一个写事件
+    int rt = iom->addEvent(fd, focus::IOManager::WRITE);
+    if(0 == rt) {
+        focus::Fiber::GetThis()->yield();
+        // 恢复后
+        // 定时器还在
+        if(timer) {
+            timer->cancel();
+        }
+        // 超时原因
+        if(tinfo->cancelled) {
+            errno = tinfo->cancelled;
+            return -1;
+        }
+    }else {
+        // 添加事件失败
+        if(timer) {
+            timer->cancel();
+        }
+        FOCUS_LOG_ERROR(g_logger) << "connect addEvent(" << fd << ", WRITE) error"; 
+    }
+
+    // 通过getsockopt获取错误状态
+    int error = 0;
+    socklen_t len = sizeof(int);
+    if(-1 == getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len)) {
+        return -1;
+    }
+    if(!error) {
+        return 0;
+    }else {
+        errno = error;
+    }
+
     return -1;
 }
 
@@ -357,13 +439,126 @@ int close(int fd) {
 }
 
 int fcntl(int fd, int cmd, ...) {
-    // TODO
+    va_list va;
+    va_start(va, cmd);
+
+    switch(cmd) {
+        case F_SETFL: {
+            int arg = va_arg(va, int);
+            va_end(va);
+            focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(fd);
+            // 无效或者关闭或者不是套接字
+            if(!ctx || ctx->isClose() || !ctx->isSocket()) {
+                return fcntl_f(fd, cmd, arg);
+            }
+            // 用户是否设置了非阻塞
+            ctx->setUserNonblock(arg & O_NONBLOCK);
+            // 系统是否设置了非阻塞
+            if(ctx->getSysNonblock()) {
+                arg |= O_NONBLOCK;
+            }else {
+                arg &= ~O_NONBLOCK;
+            }
+            return fcntl_f(fd, cmd, arg);
+        }   
+        break;
+
+        case F_GETFL: {
+            va_end(va);
+            // 获取原先状态
+            int arg = fcntl_f(fd, cmd);
+            focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(fd);
+            // 无效或者关闭或者不是套接字
+            if(!ctx || ctx->isClose() || !ctx->isSocket()) {
+                return arg;
+            }
+            // 根据系统是否设置了非阻塞
+            if(ctx->getSysNonblock()) {
+                return arg & O_NONBLOCK;
+            }else {
+                return arg & ~O_NONBLOCK;
+            }
+        }
+        break;
+
+        case F_DUPFD:
+        case F_DUPFD_CLOEXEC:
+        case F_SETFD:
+        case F_SETOWN:
+        case F_SETSIG:
+        case F_SETLEASE:
+        case F_NOTIFY:
+#ifdef F_SETPIPE_SE
+        case F_SETPIPE_SZ:
+#endif  
+                        {
+            int arg = va_arg(va, int);
+            va_end(va);
+            return fcntl_f(fd, cmd, arg);
+        }
+        break;
+
+        case F_GETFD:
+        case F_GETOWN:
+        case F_GETSIG:
+        case F_GETLEASE:
+#ifdef F_GETPIPE_SZ
+        case F_GETPIPE_SZ:
+#endif
+                        {
+            va_end(va);
+            return fcntl_f(fd, cmd);
+        }
+        break;
+
+        case F_SETLK:
+        case F_SETLKW:
+        case F_GETLK: {
+            struct flock* arg = va_arg(va, struct flock*);
+            va_end(va);
+            return fcntl_f(fd, cmd, arg);
+        }
+        break;
+
+        case F_GETOWN_EX:
+        case F_SETOWN_EX: {
+            struct f_owner_exlock* arg = va_arg(va, struct f_owner_exlock*);
+            va_end(va);
+            return fcntl_f(fd, cmd, arg);
+        }
+        break;
+
+        default: {
+            va_end(va);
+            return fcntl_f(fd, cmd);
+        }
+    }
+
     return -1;
 }
 
 int ioctl(int d, unsigned long int request, ...) {
-    // TODO
-    return -1;
+    // 解析可变参数
+    va_list va;
+    va_start(va, request);
+    void* arg = va_arg(va, void*);
+    va_end(va);
+
+    // 用于设置非阻塞
+    if(request == FIONBIO) {
+        // 调用ioctl是为了设置阻塞或者非阻塞
+        bool userNonblock = !!*(int*)arg;
+        focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(d);
+        // 上下文无效，关闭，不是套接字
+        if(!ctx || ctx->isClose() || !ctx->isSocket()) {
+            return ioctl_f(d, request, arg);
+        }
+        // 更新上下文的用户阻塞状态
+        ctx->setUserNonblock(userNonblock);
+    }
+
+    // 调用原先的函数
+    return ioctl_f(d, request, arg);
 }
 
 int getsockopt(int sockfd, int level, int optname, void* optval, socklen_t* optlen) {
@@ -371,8 +566,23 @@ int getsockopt(int sockfd, int level, int optname, void* optval, socklen_t* optl
 }
 
 int setsockopt(int sockfd, int level, int optname, const void* optval, socklen_t optlen) {
-    // TODO
-    return -1;
+    // 没有hook
+    if(!focus::t_hook_enable) {
+        return setsockopt_f(sockfd, level, optname, optval, optlen);
+    }
+    // 如果level是 SOL_SOCKET ，并且是这是读超时或者写超时
+    if(SOL_SOCKET == level) {
+        if(SO_RCVTIMEO == optname || SO_SNDTIMEO == optname) {
+            focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(sockfd);
+            if(ctx) {
+                const timeval* v = (const timeval*)optval;
+                // 设置超时时间
+                ctx->setTimeout(optname, v->tv_sec * 1000 + v->tv_usec / 1000);
+            }
+        }
+    }
+    // 调用原先的函数
+    return setsockopt_f(sockfd, level, optname, optval, optlen);
 }
 
 } // end extern "C"
