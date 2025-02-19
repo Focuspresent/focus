@@ -162,6 +162,7 @@ private:
 class LogAppender{
 public:
     using ptr=std::shared_ptr<LogAppender>;
+    using MutexType = SpinLock;
 
     virtual ~LogAppender(){}
 
@@ -174,6 +175,7 @@ public:
 protected:
     LogLevel::Level level_; //日志级别
     LogFormatter::ptr logformatter_=nullptr; //日志格式器
+    MutexType mutex_; // 锁
 };
 
 // 日志器

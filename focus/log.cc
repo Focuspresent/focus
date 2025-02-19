@@ -143,6 +143,7 @@ std::ostream& LogFormatter::format(std::ostream& os,std::shared_ptr<Logger> logg
 
 void StdOutLogAppender::log(Logger::ptr logger,LogLevel::Level level,LogEvent::ptr event){
     if(level_>level) return ;
+    MutexType::Lock lock(mutex_);
     logformatter_->format(std::cout,logger,level,event);
 }
 
@@ -168,6 +169,7 @@ bool FileLogAppender::reopen(){
 
 void FileLogAppender::log(Logger::ptr logger,LogLevel::Level level,LogEvent::ptr event){
     if(level_>level||!reopen()) return ;
+    MutexType::Lock lock(mutex_);
     logformatter_->format(ofs,logger,level,event);
 }
 
