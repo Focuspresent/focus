@@ -133,9 +133,9 @@ public:
      *  %F 协程id
      *  %N 线程名称
      *
-     *  默认格式 "%d%T%t%T%N%T%F%T%p%T%c%T%f%l%T%m%n"
+     *  默认格式 "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"
      */
-    LogFormatter(const std::string& pattern="%d%T%t%T%N%T%F%T%p%T%c%T%f%T%l%T%m%n");
+    LogFormatter(const std::string& pattern="%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n");
 
     // 利用格式化字符串初始化格式单个类
     void init();
