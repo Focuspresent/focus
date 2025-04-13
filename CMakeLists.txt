@@ -31,10 +31,12 @@ set(LIB_SRC
     focus/hook.cc)
 add_library(focus ${LIB_SRC})
 target_link_libraries(focus PUBLIC pthread yaml-cpp dl)
+target_compile_options(focus PUBLIC -rdynamic)
 
 # 添加测试
 add_executable(test_demo tests/test_demo)
 add_executable(test_ucontext tests/test_ucontext)
+add_executable(test_epoll tests/test_epoll)
 
 self_add_executable(test_log tests/test_log.cc focus focus)
 self_add_executable(test_config tests/test_config.cc focus focus)
@@ -44,3 +46,4 @@ self_add_executable(test_macro tests/test_macro.cc focus focus)
 self_add_executable(test_fiber tests/test_fiber.cc focus focus)
 self_add_executable(test_scheduler tests/test_scheduler.cc focus focus)
 self_add_executable(test_env tests/test_env.cc focus focus)
+self_add_executable(test_iomanager tests/test_iomanager.cc focus focus)
