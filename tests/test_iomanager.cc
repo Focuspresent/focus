@@ -105,11 +105,14 @@ void testIoManager() {
 
     printf("Echo Server Listening On Port: %d\n", iPortNo);
     fcntl(s_iSockListenId, F_SETFL, O_NONBLOCK);
-    focus::IOManager iom(8);
+    focus::IOManager iom(4);
     iom.addEvent(s_iSockListenId, focus::IOManager::READ, testAccept);
 }
 
 int main(int argc, char* argv[]) {
+    // 关闭系统日志
+    focus::Logger::ptr logger = FOCUS_LOG_NAME("system");
+    logger->setLevel(focus::LogLevel::FATAL);
     testIoManager();
     return 0;   
 }
