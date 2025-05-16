@@ -273,6 +273,14 @@ int socket(int domain, int type, int protocol) {
 
     // 创建套接字上下文
     focus::FdMgr::GetInstance()->get(fd, true);
+
+    // 如果用户设置了非阻塞
+    if(type & SOCK_NONBLOCK) {
+        focus::FdCtx::ptr ctx = focus::FdMgr::GetInstance()->get(fd);
+        if(ctx) {
+            ctx->setUserNonblock(true);
+        }
+    }
     
     return fd;
 }
