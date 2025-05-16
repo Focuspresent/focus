@@ -459,13 +459,17 @@ void LogFormatter::init(){
 
     for(auto& t: vec) {
         if(0 == std::get<2>(t)) {
+            // 普通消息
             items_.emplace_back(new StrignFormatItem(std::get<0>(t)));
         }else { 
+            // 格式消息
             auto it = s_strToFunc.find(std::get<0>(t));
             if(s_strToFunc.end() == it) {
+                // 没有具体的格式项
                 items_.emplace_back(new StrignFormatItem("<<error_format %" + std::get<0>(t) + ">>"));
                 iserror_ = true;
             }else {
+                // 找到具体的格式项
                 items_.emplace_back(it->second(std::get<1>(t)));
             }
         }   
@@ -479,21 +483,21 @@ LogManager::LogManager(){
 void LogManager::init(){
     root_.reset(new Logger());
     root_->addAppender(LogAppender::ptr(new StdOutLogAppender()));
-    // TODO 绝对路径
-    root_->addAppender(LogAppender::ptr(new FileLogAppender("/home/zdc/Code/Git/focus/logs/log.txt")));
+    // 相对路径
+    root_->addAppender(LogAppender::ptr(new FileLogAppender("./logs/log.txt")));
 }
 
 Logger::ptr LogManager::getLogger(const std::string& name){
     // TODO
-    auto it=loggers_.find(name);
-    if(it!=loggers_.end()){
+    auto it = loggers_.find(name);
+    if(it != loggers_.end()){
         return it->second;
     }
 
     Logger::ptr logger(new Logger(name));
     // 添加测试输出
     logger->addAppender(LogAppender::ptr(new StdOutLogAppender()));
-    loggers_[name]=logger;
+    loggers_[name] = logger;
     return logger;
 }   
 
